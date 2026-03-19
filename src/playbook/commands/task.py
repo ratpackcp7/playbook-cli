@@ -8,7 +8,7 @@ import click
 from rich.console import Console
 
 from playbook.config import find_project_root
-from playbook.parser import append_task_row
+from playbook.parser import append_task_row, update_task_status
 
 
 def slugify(title: str) -> str:
@@ -43,6 +43,29 @@ def find_next_number(tasks_dir: Path) -> str:
 def task_group():
     """Manage project tasks."""
     pass
+
+
+@task_group.command("done")
+@click.argument("task_number")
+def done_cmd(task_number: str) -> None:
+    """Mark a task as complete."""
+    console = Console()
+
+    try:
+        root = find_project_root()
+    except click.ClickException:
+        console.print("[red]Error:[/red] Not a playbook project (PLAYBOOK.md not found)")
+        sys.exit(1)
+
+    # Zero-pad to 3 digits
+    number = task_number.zfill(3)
+    tasks_md_path = root / "TASKS.md"
+
+    if not update_task_status(tasks_md_path, number, "✓"):
+        console.print(f"[red]Error:[/red] Task {number} not found in TASKS.md")
+        sys.exit(2)
+
+    console.print(f"Task {number} marked complete.")
 
 
 @task_group.command("new")

@@ -108,3 +108,32 @@ def test_task_new_outside_project(tmp_path, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(cli, ["task", "new", "Orphan Task"])
     assert result.exit_code == 1
+
+
+def test_task_done_marks_complete(in_project):
+    """playbook task done 001 changes status to [✓] in TASKS.md."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["task", "done", "001"], catch_exceptions=False)
+    assert result.exit_code == 0
+    assert "Task 001 marked complete" in result.output
+
+    tasks_md = (in_project / "TASKS.md").read_text()
+    assert "`✓`" in tasks_md
+
+
+def test_task_done_not_found(in_project):
+    """playbook task done 999 exits non-zero when task not found."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["task", "done", "999"])
+    assert result.exit_code == 2
+
+
+def test_task_done_roundtrip(in_project):
+    """parse_tasks after done shows status as [✓]."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["task", "done", "1"], catch_exceptions=False)
+    assert result.exit_code == 0
+
+    rows = parse_tasks(in_project / "TASKS.md")
+    assert len(rows) == 1
+    assert rows[0]["status"] == "✓"
