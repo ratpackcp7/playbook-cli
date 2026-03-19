@@ -22,7 +22,7 @@ def test_dry_run_shows_models_and_spec(runner, tmp_project, monkeypatch):
     assert result.exit_code == 0
     assert "Dry Run" in result.output
     # All 3 default model names present
-    assert "Gemini 2.5 Pro" in result.output
+    assert "Gemini 3.1 Pro" in result.output
     assert "DeepSeek V3.2" in result.output
     assert "Llama 4 Maverick" in result.output
     # SPEC.md content included in user message preview
@@ -56,9 +56,9 @@ def test_missing_spec_exits_3(runner, tmp_project, monkeypatch):
 # 5. --model filter shows only 1 model
 def test_model_filter_single_model(runner, tmp_project, monkeypatch):
     monkeypatch.chdir(tmp_project)
-    result = runner.invoke(cli, ["review-spec", "--model", "google/gemini-2.5-pro", "--dry-run"])
+    result = runner.invoke(cli, ["review-spec", "--model", "google/gemini-3.1-pro-preview", "--dry-run"])
     assert result.exit_code == 0
-    assert "Gemini 2.5 Pro" in result.output
+    assert "Gemini 3.1 Pro" in result.output
     # Other models should NOT appear in the model panel listing
     assert "DeepSeek V3.2" not in result.output
     assert "Llama 4 Maverick" not in result.output
