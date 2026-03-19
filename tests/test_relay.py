@@ -92,3 +92,42 @@ def test_relay_copy_without_xclip(in_project):
     # Should not crash — falls back to stdout
     assert result.exit_code == 0
     assert "=== AGENT CONTEXT ===" in result.output
+
+
+def test_relay_send_creates_file(in_project):
+    """relay --send writes .relay-prompt.txt and does NOT print prompt to stdout."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["relay", "001", "--send"], catch_exceptions=False)
+
+    assert result.exit_code == 0
+    # Should NOT contain the prompt in stdout
+    assert "=== AGENT CONTEXT ===" not in result.output
+    # Should print summary
+    assert "Prompt saved to .relay-prompt.txt" in result.output
+    assert "words" in result.output
+    assert "chars" in result.output
+    # File should exist with prompt content
+    relay_file = in_project / ".relay-prompt.txt"
+    assert relay_file.exists()
+    content = relay_file.read_text()
+    assert "=== AGENT CONTEXT ===" in content
+    assert "Do the thing." in content
+
+
+def test_relay_send_updates_gitignore(in_project):
+    """relay --send adds .relay-prompt.txt to .gitignore."""
+    (in_project / ".gitignore").write_text("__pycache__\n")
+    runner = CliRunner()
+    result = runner.invoke(cli, ["relay", "001", "--send"], catch_exceptions=False)
+
+    assert result.exit_code == 0
+    gitignore = (in_project / ".gitignore").read_text()
+    assert ".relay-prompt.txt" in gitignore
+
+
+def test_relay_send_and_copy_mutually_exclusive(in_project):
+    """relay --send --copy should error."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["relay", "001", "--send", "--copy"])
+
+    assert result.exit_code != 0

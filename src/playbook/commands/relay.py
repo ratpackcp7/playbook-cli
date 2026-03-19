@@ -34,8 +34,13 @@ COMPLETE | BLOCKED (reason)"""
 @click.command("relay")
 @click.argument("task_number")
 @click.option("--copy", is_flag=True, default=False, help="Copy prompt to clipboard via xclip")
-def relay_cmd(task_number, copy):
+@click.option("--send", is_flag=True, default=False, help="Save prompt to .relay-prompt.txt for bridge relay")
+def relay_cmd(task_number, copy, send):
     """Assemble a complete relay prompt for a specific task."""
+    if copy and send:
+        click.echo("Error: --copy and --send are mutually exclusive", err=True)
+        sys.exit(1)
+
     try:
         root = find_project_root()
     except click.ClickException:
@@ -80,8 +85,29 @@ def relay_cmd(task_number, copy):
         f"{INSTRUCTIONS_BLOCK}\n"
     )
 
+    word_count = len(prompt.split())
+    char_count = len(prompt)
+
     # Output
-    if copy:
+    if send:
+        # Write prompt to .relay-prompt.txt
+        relay_path = root / ".relay-prompt.txt"
+        relay_path.write_text(prompt)
+
+        # Add to .gitignore if not already there
+        gitignore_path = root / ".gitignore"
+        if gitignore_path.exists():
+            gitignore_content = gitignore_path.read_text()
+            if ".relay-prompt.txt" not in gitignore_content:
+                with open(gitignore_path, "a") as f:
+                    if not gitignore_content.endswith("\n"):
+                        f.write("\n")
+                    f.write(".relay-prompt.txt\n")
+        else:
+            gitignore_path.write_text(".relay-prompt.txt\n")
+
+        click.echo(f"Prompt saved to .relay-prompt.txt ({word_count} words, {char_count} chars)")
+    elif copy:
         try:
             subprocess.run(
                 ["xclip", "-selection", "clipboard"],
@@ -91,10 +117,7 @@ def relay_cmd(task_number, copy):
         except FileNotFoundError:
             click.echo("Warning: xclip not found, printing to stdout instead", err=True)
             click.echo(prompt, nl=False)
+        click.echo(f"--- {word_count} words, {char_count} chars ---", err=True)
     else:
         click.echo(prompt, nl=False)
-
-    # Stats to stderr
-    word_count = len(prompt.split())
-    char_count = len(prompt)
-    click.echo(f"--- {word_count} words, {char_count} chars ---", err=True)
+        click.echo(f"--- {word_count} words, {char_count} chars ---", err=True)
