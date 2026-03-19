@@ -56,3 +56,12 @@ def parse_tasks(tasks_md_path: Path) -> list[dict]:
         })
 
     return rows
+
+
+def append_task_row(tasks_md_path: Path, number: str, title: str) -> None:
+    """Append a new task row to TASKS.md with backtick-wrapped status."""
+    text = tasks_md_path.read_text(encoding="utf-8")
+    if text and not text.endswith("\n"):
+        text += "\n"
+    text += f"| {number} | {title} | `[ ]` | — | |\n"
+    tasks_md_path.write_text(text, encoding="utf-8")
