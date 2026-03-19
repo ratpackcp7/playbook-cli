@@ -12,7 +12,7 @@ import httpx
 DEFAULT_MODELS = [
     {"id": "google/gemini-2.5-pro", "name": "Gemini 2.5 Pro", "slug": "gemini", "role": "Architect"},
     {"id": "deepseek/deepseek-chat", "name": "DeepSeek V3.2", "slug": "deepseek", "role": "Practitioner"},
-    {"id": "qwen/qwen3-235b-a22b-instruct-2507", "name": "Qwen3 235B", "slug": "qwen", "role": "Contrarian"},
+    {"id": "meta-llama/llama-4-maverick", "name": "Llama 4 Maverick", "slug": "llama", "role": "Contrarian"},
 ]
 
 SYSTEM_PROMPT = (

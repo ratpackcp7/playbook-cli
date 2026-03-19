@@ -24,7 +24,7 @@ def test_dry_run_shows_models_and_spec(runner, tmp_project, monkeypatch):
     # All 3 default model names present
     assert "Gemini 2.5 Pro" in result.output
     assert "DeepSeek V3.2" in result.output
-    assert "Qwen3 235B" in result.output
+    assert "Llama 4 Maverick" in result.output
     # SPEC.md content included in user message preview
     assert "# Spec" in result.output
 
@@ -61,7 +61,7 @@ def test_model_filter_single_model(runner, tmp_project, monkeypatch):
     assert "Gemini 2.5 Pro" in result.output
     # Other models should NOT appear in the model panel listing
     assert "DeepSeek V3.2" not in result.output
-    assert "Qwen3 235B" not in result.output
+    assert "Llama 4 Maverick" not in result.output
 
 
 # 6. Mock: successful API call writes review file
