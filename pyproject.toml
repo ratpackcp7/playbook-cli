@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "playbook-cli"
+version = "0.1.0"
+description = "CLI tool for the project playbook workflow"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.1.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0.0"]
+
+[project.scripts]
+playbook = "playbook.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
