@@ -12,7 +12,7 @@ import httpx
 DEFAULT_MODELS = [
     {"id": "google/gemini-2.5-pro", "name": "Gemini 2.5 Pro", "slug": "gemini", "role": "Architect"},
     {"id": "deepseek/deepseek-chat", "name": "DeepSeek V3.2", "slug": "deepseek", "role": "Practitioner"},
-    {"id": "qwen/qwen3-235b-a22b-instruct", "name": "Qwen3 235B", "slug": "qwen", "role": "Contrarian"},
+    {"id": "qwen/qwen3-235b-a22b-instruct-2507", "name": "Qwen3 235B", "slug": "qwen", "role": "Contrarian"},
 ]
 
 SYSTEM_PROMPT = (
@@ -92,7 +92,7 @@ def call_openrouter(model_id: str, api_key: str, user_message: str) -> dict:
     }
     body = {
         "model": model_id,
-        "max_tokens": 4000,
+        "max_tokens": 8000,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
