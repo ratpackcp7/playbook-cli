@@ -118,7 +118,7 @@ def test_task_done_marks_complete(in_project):
     assert "Task 001 marked complete" in result.output
 
     tasks_md = (in_project / "TASKS.md").read_text()
-    assert "`✓`" in tasks_md
+    assert "`[✓]`" in tasks_md
 
 
 def test_task_done_not_found(in_project):
@@ -136,4 +136,4 @@ def test_task_done_roundtrip(in_project):
 
     rows = parse_tasks(in_project / "TASKS.md")
     assert len(rows) == 1
-    assert rows[0]["status"] == "✓"
+    assert rows[0]["status"] == "[✓]"

@@ -61,7 +61,7 @@ def done_cmd(task_number: str) -> None:
     number = task_number.zfill(3)
     tasks_md_path = root / "TASKS.md"
 
-    if not update_task_status(tasks_md_path, number, "✓"):
+    if not update_task_status(tasks_md_path, number, "[✓]"):
         console.print(f"[red]Error:[/red] Task {number} not found in TASKS.md")
         sys.exit(2)
 
