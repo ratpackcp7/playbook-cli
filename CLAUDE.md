@@ -51,3 +51,7 @@ pip install -e .
 - One commit per task
 - Tests must pass before committing
 - Do not add a database — all state stays in markdown
+
+## Active Work
+
+See `HANDOFF.md` for current work status and next steps.
