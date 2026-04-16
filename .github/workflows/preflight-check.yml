@@ -1,0 +1,62 @@
+# .github/workflows/preflight-check.yml
+# Server-side enforcement — runs on every push, can't be bypassed.
+# Catches secrets, missing docs, and DB files from ANY push source.
+#
+# Deployed by: /home/chris/scripts/git-hooks/deploy-gha.sh
+name: Preflight Check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  preflight:
+    runs-on: self-hosted
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need parent commit for diff
+
+      - name: Secret scan
+        run: |
+          echo "🔍 Scanning for leaked secrets..."
+          PATTERNS='sk-or-v1-[a-f0-9]{40,}|sk-ant-[a-zA-Z0-9_-]{40,}|ghp_[a-zA-Z0-9]{36,}|xoxb-[0-9]+-[a-zA-Z0-9]+|AKIA[0-9A-Z]{16}'
+          # Scan full repo (not just diff) for secrets
+          FOUND=$(grep -rE "$PATTERNS" --include='*.sh' --include='*.py' --include='*.ts' --include='*.tsx' --include='*.js' --include='*.json' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.env*' . 2>/dev/null | grep -v node_modules | grep -v '.git/' || true)
+          if [ -n "$FOUND" ]; then
+            echo "::error::🚨 Potential secrets found in repository"
+            echo "$FOUND" | head -10
+            exit 1
+          fi
+          echo "✅ No secrets detected"
+
+      - name: Check for database files
+        run: |
+          echo "🔍 Checking for .db/.sqlite files in diff..."
+          DB_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E '\.(db|sqlite|sqlite3)$' || true)
+          if [ -n "$DB_FILES" ]; then
+            echo "::error::🚨 Database files committed: $DB_FILES"
+            exit 1
+          fi
+          echo "✅ No database files in diff"
+
+      - name: HANDOFF.md freshness check
+        run: |
+          echo "🔍 Checking HANDOFF.md..."
+          if [ ! -f "HANDOFF.md" ] && [ -f "CLAUDE.md" ]; then
+            echo "::warning::⚠️ CLAUDE.md exists but no HANDOFF.md — consider creating one"
+            exit 0
+          fi
+          if [ -f "HANDOFF.md" ]; then
+            # Check if code changed but HANDOFF.md didn't
+            CODE_CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E '\.(py|ts|tsx|js|jsx|sh)$' | grep -v 'node_modules' | head -1 || true)
+            HANDOFF_CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep "HANDOFF.md" || true)
+            if [ -n "$CODE_CHANGED" ] && [ -z "$HANDOFF_CHANGED" ]; then
+              echo "::warning::⚠️ Code changed but HANDOFF.md not updated"
+            else
+              echo "✅ HANDOFF.md is current"
+            fi
+          fi
