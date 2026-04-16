@@ -1,36 +1,57 @@
-# Playbook CLI
+# CLAUDE.md — Playbook CLI
 
-CLI tool for the project-playbook workflow — plan tasks, track status, run reviews, and relay context between sessions.
+CLI tool that automates the project playbook workflow — creating task files, tracking status, assembling relay prompts for multi-session AI agent work.
 
-## Key Files
-- `src/playbook/cli.py` — Click CLI entry point, registers all subcommands
-- `src/playbook/commands/init.py` — `playbook init` — scaffold a new project playbook
-- `src/playbook/commands/task.py` — `playbook task` — create/manage task files
-- `src/playbook/commands/status.py` — `playbook status` — show project status
-- `src/playbook/commands/relay.py` — `playbook relay` — generate context relay for new sessions
-- `src/playbook/commands/review.py` — `playbook review-spec` — review spec compliance
-- `src/playbook/commands/verify.py` — `playbook verify` — verify task completion
-- `src/playbook/commands/check.py` — `playbook check` — run project health checks
-- `src/playbook/parser.py` — markdown parser for playbook/task files
-- `src/playbook/reviewer.py` — spec review logic
-- `src/playbook/templates.py` — template generation for playbook files
-- `src/playbook/config.py` — CLI configuration
-- `pyproject.toml` — package config, entry point: `playbook = "playbook.cli:cli"`
-- `smoke_test.sh` — end-to-end smoke test script
+## Before You Start
+- Read `AGENTS.md` for full file inventory and architecture
+- Read `SPEC.md` for detailed design decisions and command specs
 
-## Installation
-- `pip install -e .` (or `pip install -e ".[dev]"` for tests)
-- Provides the `playbook` command after install
+## Key Facts
+- **Python** 3.12+ project (not a service — CLI tool, no port)
+- **Framework**: Click 8.x + Rich
+- **Entry point**: `playbook = "playbook.cli:cli"` (from pyproject.toml)
+- **Install**: `pip install -e .` (or `pip install -e ".[dev]"` for tests)
+- **Tests**: `pytest tests/ -v`
+- **Smoke test**: `bash smoke_test.sh`
+
+## Install / Run
+
+```bash
+cd ~/projects/playbook-cli
+pip install -e .
+# Now available as `playbook` command
+```
+
+## Available Commands
+
+| Command | Purpose |
+|---------|---------|
+| `playbook init <name>` | Scaffold a new project playbook |
+| `playbook task new "<title>"` | Create a new task file |
+| `playbook status` | Show project status (task counts, completion) |
+| `playbook relay <NNN>` | Generate context relay for new sessions |
+| `playbook review-spec` | Review spec compliance |
+| `playbook verify` | Verify task completion |
+| `playbook check` | Run project health checks |
+
+## How it works
+
+- Expects to run inside a project directory with `PLAYBOOK.md` and `tasks/` folder
+- All state lives in markdown files (no database)
+- `parser.py` reads `TASKS.md` and task files
+- `templates.py` generates markdown templates
+- Some commands call external APIs via httpx (e.g., context-engine relay)
 
 ## Dependencies
-- click, rich, httpx (runtime)
-- pytest (dev)
 
-## Not a Service
-- This is a CLI tool, not a running service. No port, no deployment.
-- Installed into venvs or globally on the dev machine.
+- **Runtime**: click, rich, httpx
+- **Dev**: pytest
 
-## Gotchas
-- Expects to run inside a project directory with PLAYBOOK.md and tasks/ folder.
-- Uses httpx — some commands may call external APIs (context-engine relay).
-- Python >=3.12 required.
+## Rules
+- One commit per task
+- Tests must pass before committing
+- Do not add a database — all state stays in markdown
+
+## Active Work
+
+See `HANDOFF.md` for current work status and next steps.
