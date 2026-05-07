@@ -1,6 +1,10 @@
-# CLAUDE.md — Playbook CLI
+# AGENTS.md — Playbook CLI
 
-CLI tool that automates the project playbook workflow — creating task files, tracking status, assembling relay prompts for multi-session AI agent work.
+## Purpose
+
+CLI tool that automates the project playbook workflow — scaffolding projects, creating and numbering task files, tracking status, and assembling relay prompts for multi-session AI agent work.
+
+Used by the CP7 project playbook template and by agents directly to manage task-driven development workflows across multiple sessions.
 
 ## Before You Start
 - Read `AGENTS.md` for full file inventory and architecture
@@ -13,6 +17,37 @@ CLI tool that automates the project playbook workflow — creating task files, t
 - **Install**: `pip install -e .` (or `pip install -e ".[dev]"` for tests)
 - **Tests**: `pytest tests/ -v`
 - **Smoke test**: `bash smoke_test.sh`
+
+## Architecture
+
+```
+src/playbook/
+  cli.py            → Click CLI entry point, command registration
+  config.py         → Project root detection (walks up for PLAYBOOK.md), path resolution
+  parser.py         → TASKS.md parser, status updater, task row appender
+  templates.py      → Markdown template generation for PLAYBOOK.md, SPEC.md, tasks, etc.
+  reviewer.py       → Spec compliance review logic
+  commands/
+    init.py         → `playbook init` — scaffold new project playbook
+    task.py         → `playbook task new` — create and number task files
+    status.py       → `playbook status` — show project status and completion
+    relay.py        → `playbook relay` — assemble context relay prompt
+    review.py       → `playbook review-spec` — review spec compliance
+    verify.py       → `playbook verify` — verify task completion
+    check.py        → `playbook check` — run project health checks
+```
+
+All state lives in markdown files within the target project directory. No database, no config files, no persistent state in the CLI tool itself. The CLI walks up from the current directory to find `PLAYBOOK.md` to determine the project root.
+
+## Agents and Crons
+
+None.
+
+## Gotchas
+
+- CLI tool used by project-playbook templates — changes here affect template generation for all newly scaffolded projects.
+- All state lives in markdown files — no database, so `parser.py` is sensitive to markdown table formatting changes in `TASKS.md`.
+- `PLAYBOOK.md` must exist in the project directory or a parent directory for most commands to work.
 
 ## Install / Run
 
@@ -55,6 +90,10 @@ pip install -e .
 ## Active Work
 
 See `HANDOFF.md` for current work status and next steps.
+
+## Decisions
+
+See docs/decisions/. No ADRs exist yet.
 
 <!-- CP7-AGENT-STANDARDS:START -->
 
